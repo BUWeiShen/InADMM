@@ -56,7 +56,7 @@ for order=1:4
         param.max_time=max_time;
         
         
-        
+%%        
         
         %inner: GD
         withobj=0;
@@ -69,7 +69,7 @@ for order=1:4
         namestr1=['history_InADMM_gdB' num2str(p) '=history_InADMM_gdB'];
         eval(namestr1);
         
-        
+%%        
         obj_GD=history_InADMM_gdB.objval(end);
         param.obj=obj_GD; 
         withobj=1;
@@ -86,7 +86,35 @@ for order=1:4
            eval(namestr11);
 
    
+%% 
+            inSolver='InADMM_fix_tol';
+            param.inSolver=inSolver;
 
+            param.tol_fix=1;
+            [~, history_InADMM_fix1] = InADMM_EN_Logistic(param);
+
+               namestr2=['history_InADMM_fix1' num2str(p) '=history_InADMM_fix1'];
+               eval(namestr2);
+
+
+
+            
+
+            param.tol_fix=0.1;
+            [~, history_InADMM_fixp1] = InADMM_EN_Logistic(param);
+
+               namestr3=['history_InADMM_fixp1' num2str(p) '=history_InADMM_fixp1'];
+               eval(namestr3);
+
+
+
+           
+
+            param.tol_fix=0.01;
+            [~, history_InADMM_fixpp1] = InADMM_EN_Logistic(param);
+
+               namestr4=['history_InADMM_fixpp1' num2str(p) '=history_InADMM_fixpp1'];
+               eval(namestr4);
 
 
   
@@ -100,44 +128,68 @@ end
 
 g_compare_GD_ADMM=figure;
 subplot(2,2,1)
-t=plot(history_InADMM_gdB100000.time, log(history_InADMM_gdB100000.objval), 'c--s', history_InADMM_InADMM100000.time, log(history_InADMM_InADMM100000.objval), 'b-','MarkerSize', 5,'LineWidth', 1);
+t=plot(history_InADMM_gdB100000.time, log(history_InADMM_gdB100000.objval), 'c--s',...
+       history_InADMM_InADMM100000.time, log(history_InADMM_InADMM100000.objval), 'b-',...
+       history_InADMM_fix1100000.time, log(history_InADMM_fix1100000.objval),'b-.',...
+       history_InADMM_fixp1100000.time, log(history_InADMM_fixp1100000.objval),'r-*',...
+       history_InADMM_fixpp1100000.time, log(history_InADMM_fixpp1100000.objval),'k:',...
+       'MarkerSize', 5,'LineWidth', 1);
 set(gca,'Yscale','log')   
-ylabel('Objective value');
+ylabel('log(Objective value)');
 xlabel('Time')
 set(t(2), 'LineWidth', 1.5) 
-legend('inner=GD','inner=InADMM');
+legend('$GD$','$InADMM$','$InADMM_{1e+0}$','$InADMM_{1e-1}$','$InADMM_{1e-2}$','Interpreter','latex')
 xlabel('Time')
 title('p=100000')
 
 subplot(2,2,2)
-t=plot(history_InADMM_gdB200000.time, log(history_InADMM_gdB200000.objval), 'c--s', history_InADMM_InADMM200000.time, log(history_InADMM_InADMM200000.objval), 'b-','MarkerSize', 5,'LineWidth', 1);
+t=plot(history_InADMM_gdB200000.time, log(history_InADMM_gdB200000.objval), 'c--s',...
+       history_InADMM_InADMM200000.time, log(history_InADMM_InADMM200000.objval), 'b-',...
+       history_InADMM_fix1200000.time, log(history_InADMM_fix1200000.objval),'b-.',...
+       history_InADMM_fixp1200000.time, log(history_InADMM_fixp1200000.objval),'r-*',...
+       history_InADMM_fixpp1200000.time, log(history_InADMM_fixpp1200000.objval),'k:',...
+       'MarkerSize', 5,'LineWidth', 1);
 set(gca,'Yscale','log')   
-ylabel('Objective value');
+ylabel('log(Objective value)');
 xlabel('Time')
 set(t(2), 'LineWidth', 1.5) 
-legend('inner=GD','inner=InADMM');
+legend('$GD$','$InADMM$','$InADMM_{1e+0}$','$InADMM_{1e-1}$','$InADMM_{1e-2}$','Interpreter','latex')
 xlabel('Time')
 title('p=200000')
 
 subplot(2,2,3)
-t=plot(history_InADMM_gdB300000.time, log(history_InADMM_gdB300000.objval), 'c--s', history_InADMM_InADMM300000.time, log(history_InADMM_InADMM300000.objval), 'b-','MarkerSize', 5,'LineWidth', 1);
+t=plot(history_InADMM_gdB300000.time, log(history_InADMM_gdB300000.objval), 'c--s',...
+       history_InADMM_InADMM300000.time, log(history_InADMM_InADMM300000.objval), 'b-',...
+       history_InADMM_fix1300000.time, log(history_InADMM_fix1300000.objval),'b-.',...
+       history_InADMM_fixp1300000.time, log(history_InADMM_fixp1300000.objval),'r-*',...
+       history_InADMM_fixpp1300000.time, log(history_InADMM_fixpp1300000.objval),'k:',...
+       'MarkerSize', 5,'LineWidth', 1);
 set(gca,'Yscale','log')   
-ylabel('Objective value');
+ylabel('log(Objective value)');
 xlabel('Time')
 set(t(2), 'LineWidth', 1.5) 
-legend('inner=GD','inner=InADMM');
+legend('$GD$','$InADMM$','$InADMM_{1e+0}$','$InADMM_{1e-1}$','$InADMM_{1e-2}$','Interpreter','latex')
 xlabel('Time')
 title('p=300000')
 
 subplot(2,2,4)
-t=plot(history_InADMM_gdB400000.time, log(history_InADMM_gdB400000.objval), 'c--s', history_InADMM_InADMM400000.time, log(history_InADMM_InADMM400000.objval), 'b-','MarkerSize', 5,'LineWidth', 1);
+t=plot(history_InADMM_gdB400000.time, log(history_InADMM_gdB400000.objval), 'c--s',...
+       history_InADMM_InADMM400000.time, log(history_InADMM_InADMM400000.objval), 'b-',...
+       history_InADMM_fix1400000.time, log(history_InADMM_fix1400000.objval),'b-.',...
+       history_InADMM_fixp1400000.time, log(history_InADMM_fixp1400000.objval),'r-*',...
+       history_InADMM_fixpp1400000.time, log(history_InADMM_fixpp1400000.objval),'k:',...
+       'MarkerSize', 5,'LineWidth', 1);
 set(gca,'Yscale','log')   
-ylabel('Objective value');
+ylabel('log(Objective value)');
 xlabel('Time')
 set(t(2), 'LineWidth', 1.5) 
-legend('inner=GD','inner=InADMM');
+legend('$GD$','$InADMM$','$InADMM_{1e+0}$','$InADMM_{1e-1}$','$InADMM_{1e-2}$','Interpreter','latex')
 xlabel('Time')
 title('p=400000')
+
+
+
+
 
 
 
