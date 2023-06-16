@@ -64,17 +64,13 @@ for order=1:4
 
         inSolver='GD';
         param.inSolver=inSolver;
-        [~, history_GD] = InADMM_EN_Logistic(param);
-
-
-
         [~, history_InADMM_gdB] = InADMM_EN_Logistic(param);
         
         namestr1=['history_InADMM_gdB' num2str(p) '=history_InADMM_gdB'];
         eval(namestr1);
         
         
-        obj_GD=history_GD.objval(end);
+        obj_GD=history_InADMM_gdB.objval(end);
         param.obj=obj_GD; 
         withobj=1;
         param.withobj=withobj;
@@ -102,10 +98,9 @@ end
 
 
 
-
 g_compare_GD_ADMM=figure;
 subplot(2,2,1)
-t=plot(history_InADMM_gdB100000.time, log(history_InADMM_gdB100000.objval2), 'c--s', history_InADMM_InADMM100000.time, log(history_InADMM_InADMM100000.objval2), 'b-','MarkerSize', 5,'LineWidth', 1);
+t=plot(history_InADMM_gdB100000.time, log(history_InADMM_gdB100000.objval), 'c--s', history_InADMM_InADMM100000.time, log(history_InADMM_InADMM100000.objval), 'b-','MarkerSize', 5,'LineWidth', 1);
 set(gca,'Yscale','log')   
 ylabel('Objective value');
 xlabel('Time')
@@ -115,7 +110,7 @@ xlabel('Time')
 title('p=100000')
 
 subplot(2,2,2)
-t=plot(history_InADMM_gdB200000.time, log(history_InADMM_gdB200000.objval2), 'c--s', history_InADMM_InADMM200000.time, log(history_InADMM_InADMM200000.objval2), 'b-','MarkerSize', 5,'LineWidth', 1);
+t=plot(history_InADMM_gdB200000.time, log(history_InADMM_gdB200000.objval), 'c--s', history_InADMM_InADMM200000.time, log(history_InADMM_InADMM200000.objval), 'b-','MarkerSize', 5,'LineWidth', 1);
 set(gca,'Yscale','log')   
 ylabel('Objective value');
 xlabel('Time')
@@ -125,7 +120,7 @@ xlabel('Time')
 title('p=200000')
 
 subplot(2,2,3)
-t=plot(history_InADMM_gdB300000.time, log(history_InADMM_gdB300000.objval2), 'c--s', history_InADMM_InADMM300000.time, log(history_InADMM_InADMM300000.objval2), 'b-','MarkerSize', 5,'LineWidth', 1);
+t=plot(history_InADMM_gdB300000.time, log(history_InADMM_gdB300000.objval), 'c--s', history_InADMM_InADMM300000.time, log(history_InADMM_InADMM300000.objval), 'b-','MarkerSize', 5,'LineWidth', 1);
 set(gca,'Yscale','log')   
 ylabel('Objective value');
 xlabel('Time')
@@ -135,7 +130,7 @@ xlabel('Time')
 title('p=300000')
 
 subplot(2,2,4)
-t=plot(history_InADMM_gdB400000.time, log(history_InADMM_gdB400000.objval2), 'c--s', history_InADMM_InADMM400000.time, log(history_InADMM_InADMM400000.objval2), 'b-','MarkerSize', 5,'LineWidth', 1);
+t=plot(history_InADMM_gdB400000.time, log(history_InADMM_gdB400000.objval), 'c--s', history_InADMM_InADMM400000.time, log(history_InADMM_InADMM400000.objval), 'b-','MarkerSize', 5,'LineWidth', 1);
 set(gca,'Yscale','log')   
 ylabel('Objective value');
 xlabel('Time')
@@ -143,5 +138,6 @@ set(t(2), 'LineWidth', 1.5)
 legend('inner=GD','inner=InADMM');
 xlabel('Time')
 title('p=400000')
+
 
 
