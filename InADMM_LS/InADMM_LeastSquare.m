@@ -12,6 +12,8 @@ lambda1=param.lambda1;
 lambda2=param.lambda2;
 rho=param.rho;
 
+
+
 withobj=param.withobj;
 MAX_ITER = param.MAX_ITER;
 ABSTOL   = param.ABSTOL;
@@ -64,6 +66,37 @@ elseif strcmp(lsSolver, 'cholesky')
         [L, U] = factor(Q, rho);
         tElapsedChol = toc(tStartChol)
 
+elseif strcmp(lsSolver, 'Xie_et_al_2017_beta')
+       
+        fprintf(' using %s ls solver...\n', lsSolver);
+        w=param.w0;
+         sigma_Xie=param.sigma_Xie;
+         parameters.rhoL=rho;
+      
+
+         A = param.A;
+         B=param.B;
+         b=param.b;
+         beta=param.beta0;
+       parameters.AA=A;
+       parameters.BB=B;
+       parameters.bb=b;
+
+ elseif strcmp(lsSolver, 'Xie_et_al_2017_eta')
+        
+        fprintf(' using %s ls solver...\n', lsSolver);
+        w=param.w0;
+         sigma_Xie=param.sigma_Xie;
+         parameters.rhoL=rho;
+      
+
+         A = param.A;
+         B=param.B;
+         b=param.b;
+         beta=param.beta0;
+       parameters.AA=A;
+       parameters.BB=B;
+       parameters.bb=b;
 end
 
 
@@ -95,19 +128,19 @@ while iter<=MAX_ITER
         if strcmp(lsSolver, 'InADMM_prop')
            
             if     iter==1
-        tol_part1=0.999;
-        tol_part2=0.999;
+        %tol_part1=0.999;
+        %tol_part2=0.999;
                     phi_temp=QTq+rho*(alpha+gamma/rho); phi=Q*phi_temp;
                     tol=0.999;
                     [eta,~,~,inner_iter_num,~] = cgs_at_least_1(@afun,phi,tol,1,[],[],eta);
                     QTE=Q'*eta; beta=(phi_temp-QTE)/(lambda2+rho);
                    
             else
-        tol_part1=sigma_prop*norm(afun(eta)-phi,2);
-        tol_part2=(mu/sqrt(2))*(    sqrt(s_norm_temp^2/rho+rho*r_norm_temp^2)     );
+        %tol_part1=sigma_prop*norm(afun(eta)-phi,2);
+        %tol_part2=(mu/sqrt(2))*(    sqrt(s_norm_temp^2/rho+rho*r_norm_temp^2)     );
                     tolAbs=0.99*sigma_prop*(norm(afun(eta)-phi,2)+(mu/sqrt(2))*(    sqrt(s_norm_temp^2/rho+rho*r_norm_temp^2)     ) );
                     phi_temp=QTq+rho*(alpha+gamma/rho); phi=Q*phi_temp; tol=tolAbs /norm(phi,2);
-                    [eta,~,~,inner_iter_num,~] = cgs(@afun,phi,tol,200,[],[],eta); 
+                    [eta,~,~,inner_iter_num,~] = cgs_at_least_1(@afun,phi,tol,200,[],[],eta); 
                     QTE=Q'*eta; beta=(phi_temp-QTE)/(lambda2+rho);
         
             end
@@ -144,6 +177,37 @@ while iter<=MAX_ITER
                            
                     [beta, ~, ~, inner_iter_num] = lsqr([Q; cons1*speye(p)], [q; cons2*(rho*alpha+gamma)], [], 50, [], [], beta);  
                      tol=0; 
+        elseif strcmp(lsSolver, 'Xie_et_al_2017_eta')
+                parameters.ww=w;
+                parameters.alpha=alpha;
+                parameters.gamma=gamma;
+                parameters.sigma=sigma_Xie;
+                parameters.phi_beta=QTq+rho*(alpha+gamma/rho); 
+                     phi_temp=QTq+rho*(alpha+gamma/rho); 
+                  parameters.phi_temp=phi_temp;   
+                  parameters.lambda2=lambda2;
+parameters.Q=Q;
+
+                     phi=Q*phi_temp;    
+                     tol_default=1e-10;
+
+                     [eta,~,tol,inner_iter_num,~] = cgs_adaptive_tol_eta(@afun,phi,1,parameters,tol_default,200,[],[],eta); 
+                     QTE=Q'*eta; beta=(phi_temp-QTE)/(lambda2+rho);
+
+
+                    
+
+
+                     
+        elseif strcmp(lsSolver, 'Xie_et_al_2017_beta')
+                parameters.ww=w;
+                parameters.alpha=alpha;
+                parameters.gamma=gamma;
+                parameters.sigma=sigma_Xie;
+                     phi=QTq+rho*(alpha+gamma/rho);     
+                     tol_default=1e-10;
+                     [beta,~,~,inner_iter_num,~] = cgs_adaptive_tol(@afun2,phi,1,parameters,tol_default,200,[],[],beta);
+                     tol=norm(afun2(beta)-phi)/norm(phi);
 
         end
         
@@ -167,10 +231,14 @@ while iter<=MAX_ITER
     history.tol(k) = tol;
     history.eps_pri(k) = sqrt(p)*ABSTOL + RELTOL*max(norm(beta), norm(-alpha));
     history.eps_dual(k)= sqrt(p)*ABSTOL + RELTOL*norm(gamma);
-
+%{
     if strcmp(lsSolver, 'InADMM_prop')
     history.tol_part1(k) = tol_part1;
     history.tol_part2(k) = tol_part2;
+    end
+%}
+    if strcmp(lsSolver, 'Xie_et_al_2017')
+       w=w-rho*(afun2(beta)-phi);
     end
     history.time(k)=toc(tStarFunc);
 
@@ -225,6 +293,13 @@ end
   
   temp=Q'*eta;
   y=Q*temp+(rho+lambda2)*eta;
+ end
+
+ function y = afun2(beta)
+ 
+  
+  temp=Q*beta;
+  y=Q'*temp+(rho+lambda2)*beta;
  end
 
 

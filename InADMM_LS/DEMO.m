@@ -1,18 +1,18 @@
 %% table header
-caption='\caption{Elatic-net ($a=0.5$): Comparison between $\text{InADMM}_{Prop}$, InADMM(2018), $\text{ADMM}_{Cholesky}$, $\text{ADMM}_{LSQR}$ and $\text{ADMM}_{1e-t}$}';
+caption='\caption{LASSO ($a=1$): Comparison between $\text{InADMM}_{Prop}$, InADMM(2018), $\text{ADMM}_{Cholesky}$, $\text{ADMM}_{LSQR}$ and $\text{ADMM}_{1e-t}$}';
 label='\label{tab:elasticNet5}';
 begin_adjustment='\begin{adjustbox}{center,max width=1\textwidth}';
 scale_box='\scalebox{0.85}{';
 begin_tabular='\begin{tabular}{|c|l|l|l|l|l|l|}';
 headerline='$(n,p,sd) $  & Algorithm & Iteration & Sum CG & Mean/Max CG & Time & Obj \\ \hline';
-columntitle1='\multirow{9}{*}{$(2*10^4,3*10^4)$}';
+columntitle1='\multirow{9}{*}{$(2.5*10^4,4*10^4)$}';
 latex22 = {'\begin{table}[]';caption;label;begin_adjustment;scale_box;begin_tabular;'\hline';headerline;columntitle1};
 
 
 randn('seed', 0);
 rand('seed',0);
-n = 20000; % number of examples
-p = 30000; % number of features
+n = 25000; % number of examples
+p = 40000; % number of features
 sd = 100/p; % sparsity density
 x0 = sprandn(p,1,sd);
 Q=randn(n,p);
@@ -74,9 +74,12 @@ param.beta0=beta0;
 
 param.max_time=max_time;
 
-
-
-
+% for Xie et al 2017
+param.sigma_Xie=0.99;
+param.w0=beta0;
+param.A= speye(p);
+param.B=-speye(p);
+param.b=0;
 
 %% LSQR
 lsSolver= 'LSQR'; 
@@ -95,7 +98,7 @@ param.withobj=withobj;
     input=['&$\text{ADMM}_{LSQR}$  &', num2str(length_LSQR), '&', '$\sim$', '&', '$\sim$',  '&' ,num2str(time_LSQR), '&' ,num2str(objLSQR),   '\\ '];
  
  else
-    input=['&$\text{ADMM}_{LSQR}$   &','$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'>1000', '&' ,'$\sim$',   '\\ '];
+    input=['&$\text{ADMM}_{LSQR}$   &','$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$>1000$', '&' ,'$\sim$',   '\\ '];
  end
 
 latex22=[latex22;input];
@@ -116,7 +119,7 @@ param.withobj=withobj;
  if time_CHOL<1000
 input=['&$\text{ADMM}_{Cholesky}$  &', num2str(length_CHOL), '&', '$\sim$', '&', '$\sim$',  '&' ,num2str(time_CHOL), '&' ,num2str(objCHOL),   '\\ '];
  else
-input=['&$\text{ADMM}_{Cholesky}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'>1000', '&' ,'$\sim$',   '\\ '];
+input=['&$\text{ADMM}_{Cholesky}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$>1000$', '&' ,'$\sim$',   '\\ '];
  end
 latex22=[latex22;input];
 
@@ -131,7 +134,7 @@ param.lsSolver=lsSolver;
 param.withobj=withobj;
 [alpha_2018,history_2018] = InADMM_LeastSquare(param);
  obj2018=history_2018.objval(end); % objective value
- length_2018=length(history_2018.cg_iters);% outer iteration number
+ length_2018=length(history_2018.cg_iters);% outer iteration numbernargin
  sumiter_2018=sum(history_2018.cg_iters);% sum of inner iteration number
  mean_2018= mean(history_2018.cg_iters);% meanvalue of inner iteration numbers
  max_2018=max(history_2018.cg_iters);% maximum of inner iteration numbers
@@ -155,6 +158,26 @@ input=['&InADMM(2018)  &', num2str(length_2018), '&', num2str(sumiter_2018), '&'
 latex22=[latex22;input];  
 end
 
+%% Xie
+lsSolver= 'Xie_et_al_2017_eta'; 
+withobj=1;
+param.lsSolver=lsSolver;
+param.withobj=withobj;
+[alpha_xie,history_xie] = InADMM_LeastSquare_Xie(param);
+ objxie=history_xie.objval(end); % objective value
+ length_xie=length(history_xie.cg_iters);% outer iteration number
+ sumiter_xie=sum(history_xie.cg_iters);% sum of inner iteration number
+ mean_xie= mean(history_xie.cg_iters);% meanvalue of inner iteration numbers
+ max_xie=max(history_xie.cg_iters);% maximum of inner iteration numbers
+ time_xie=max(history_xie.time);% 
+ if time_xie<1000
+    input=['& ADMM (Xie et al 2017)  &', num2str(length_xie), '&', num2str(sumiter_xie), '&', num2str(mean_xie), '/' ,num2str(max_xie),  '&' ,num2str(time_xie), '&' ,num2str(objxie),   '\\ '];
+ 
+ else
+    input=['&ADMM (Xie et al 2017) &','$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$>1000$', '&' ,'$\sim$',   '\\ '];
+ end
+
+latex22=[latex22;input];
 
 %% Proposed InADMM 1
 lsSolver= 'InADMM_prop'; %'InADMM2018', 'ADMM_fix_tol','LSQR','cholesky'
@@ -197,9 +220,9 @@ param.withobj=withobj;
  if length_fixtol2<500 && time_fixtol2<1000
     input=['&$\text{ADMM}_{1e-2}$  &', num2str(length_fixtol2), '&', num2str(sumiter_fixtol2), '&', num2str(mean_fixtol2), '/' ,num2str(max_fixtol2),  '&' ,num2str(time_fixtol2), '&' ,num2str(objfixtol2),   '\\ '];
  elseif length_fixtol2>=500
-    input=['&$\text{ADMM}_{1e-2}$  &', '>500', '&', '$\sim$', '&', '$\sim$',  '&' ,'$\sim$', '&' ,'$\sim$',   '\\ '];
+    input=['&$\text{ADMM}_{1e-2}$  &', '$>500$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$\sim$', '&' ,'$\sim$',   '\\ '];
  elseif time_fixtol2>=1000
-     input=['&$\text{ADMM}_{1e-2}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'>1000', '&' ,'$\sim$',   '\\ '];
+     input=['&$\text{ADMM}_{1e-2}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$>1000$', '&' ,'$\sim$',   '\\ '];
  end
 latex22=[latex22;input];
 %% 1e-4
@@ -221,9 +244,9 @@ param.withobj=withobj;
  if length_fixtol4<500 && time_fixtol4<1000
     input=['&$\text{ADMM}_{1e-4}$  &', num2str(length_fixtol4), '&', num2str(sumiter_fixtol4), '&', num2str(mean_fixtol4), '/' ,num2str(max_fixtol4),  '&' ,num2str(time_fixtol4), '&' ,num2str(objfixtol4),   '\\ '];
  elseif length_fixtol4>=500
-    input=['&$\text{ADMM}_{1e-4}$  &', '>500', '&', '$\sim$', '&', '$\sim$',  '&' ,'$\sim$', '&' ,'$\sim$',   '\\ '];
+    input=['&$\text{ADMM}_{1e-4}$  &', '$>500$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$\sim$', '&' ,'$\sim$',   '\\ '];
  elseif time_fixtol4>=1000
-     input=['&$\text{ADMM}_{1e-4}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'>1000', '&' ,'$\sim$',   '\\ '];
+     input=['&$\text{ADMM}_{1e-4}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$>1000$', '&' ,'$\sim$',   '\\ '];
  end
  latex22=[latex22;input];
 %% 1e-6
@@ -245,9 +268,9 @@ param.withobj=withobj;
  if length_fixtol6<500 && time_fixtol6<1000
     input=['&$\text{ADMM}_{1e-6}$  &', num2str(length_fixtol6), '&', num2str(sumiter_fixtol6), '&', num2str(mean_fixtol6), '/' ,num2str(max_fixtol6),  '&' ,num2str(time_fixtol6), '&' ,num2str(objfixtol6),   '\\ '];
  elseif length_fixtol6>=500
-    input=['&$\text{ADMM}_{1e-6}$  &', '>500', '&', '$\sim$', '&', '$\sim$',  '&' ,'$\sim$', '&' ,'$\sim$',   '\\ '];
+    input=['&$\text{ADMM}_{1e-6}$  &', '$>500$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$\sim$', '&' ,'$\sim$',   '\\ '];
  elseif time_fixtol6>=1000
-     input=['&$\text{ADMM}_{1e-6}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'>1000', '&' ,'$\sim$',   '\\ '];
+     input=['&$\text{ADMM}_{1e-6}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$>1000$', '&' ,'$\sim$',   '\\ '];
  end
 latex22=[latex22;input];
 %% 1e-8
@@ -268,9 +291,9 @@ param.withobj=withobj;
  if length_fixtol8<500 && time_fixtol8<1000
     input=['&$\text{ADMM}_{1e-8}$  &', num2str(length_fixtol8), '&', num2str(sumiter_fixtol8), '&', num2str(mean_fixtol8), '/' ,num2str(max_fixtol8),  '&' ,num2str(time_fixtol8), '&' ,num2str(objfixtol8),   '\\ '];
  elseif length_fixtol8>=500
-    input=['&$\text{ADMM}_{1e-8}$  &', '>500', '&', '$\sim$', '&', '$\sim$',  '&' ,'$\sim$', '&' ,'$\sim$',   '\\ '];
+    input=['&$\text{ADMM}_{1e-8}$  &', '$>500$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$\sim$', '&' ,'$\sim$',   '\\ '];
  elseif time_fixtol8>=1000
-     input=['&$\text{ADMM}_{1e-8}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'>1000', '&' ,'$\sim$',   '\\ '];
+     input=['&$\text{ADMM}_{1e-8}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$>1000$', '&' ,'$\sim$',   '\\ '];
  end
 latex22=[latex22;input];
 %% 1e-10
@@ -290,9 +313,10 @@ param.withobj=withobj;
  if length_fixtol10<500 && time_fixtol10<1000
     input=['&$\text{ADMM}_{1e-10}$  &', num2str(length_fixtol10), '&', num2str(sumiter_fixtol10), '&', num2str(mean_fixtol10), '/' ,num2str(max_fixtol10),  '&' ,num2str(time_fixtol10), '&' ,num2str(objfixtol10),   '\\ \hline'];
  elseif length_fixtol10>=500
-    input=['&$\text{ADMM}_{1e-10}$  &', '>500', '&', '$\sim$', '&', '$\sim$',  '&' ,'$\sim$', '&' ,'$\sim$',   '\\ \hline'];
+    input=['&$\text{ADMM}_{1e-10}$  &', '$>500$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$\sim$', '&' ,'$\sim$',   '\\ \hline'];
  elseif time_fixtol10>=1000
-     input=['&$\text{ADMM}_{1e-10}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'>1000', '&' ,'$\sim$',   '\\ \hline'];
+     input=['&$\text{ADMM}_{1e-10}$  &', '$\sim$', '&', '$\sim$', '&', '$\sim$',  '&' ,'$>1000$', '&' ,'$\sim$',   '\\ \hline'];
  end
 latex22=[latex22;input;'\end{tabular}';'}';'\end{adjustbox}';'\end{table}'];
 disp(char(latex22))
+
